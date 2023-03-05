@@ -52,7 +52,10 @@ while true; do
           echo Got $emtu for $einterface
           # Current ethernet MTU is incorrect so needs changing
           echo Checking $einterface
-          if [[ $emtu -lt $(($PTARGET+8)) ]] ; then
+          if [[ $emtu -eq $(($PTARGET)) ]] ; then
+            echo $einterface has right MTU
+            emtucorrect=1
+          else
             echo $einterface has wrong MTU
             # Use +12 in above command if PPPoE over VLAN
             echo Reconfiguring ethernet MTU to $(($PTARGET+8)) for $einterface
@@ -64,10 +67,7 @@ while true; do
             # ip link set dev $einterface mtu $(($PTARGET+12)) && ip link set dev $einterface.6 mtu $(($PTARGET+8))
             # Bring interface down and up to apply changes
             echo Running ip link set $einterface down \&\& ip link set $einterface up
-            ip link set $einterface down && ip link set $einterface up
-          else
-            echo $einterface has right MTU
-            emtucorrect=1
+            ip link set $einterface down && ip link set $einterface up  
           fi
           # A situation can occur where all the configuration files are correct
           # but the ppp interface is still not right
