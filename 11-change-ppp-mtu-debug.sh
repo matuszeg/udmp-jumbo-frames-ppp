@@ -4,7 +4,7 @@
 # MINTERFACES="(ppp0|ppp1|ppp10)"
 MINTERFACES="(ppp0)"
 # Desired MTU of PPP interfaces
-PTARGET=1444
+PTARGET=1500
 SET_MSS=true
 
 runningmtu=0
