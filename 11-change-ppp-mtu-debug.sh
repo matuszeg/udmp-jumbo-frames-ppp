@@ -31,7 +31,7 @@ while true; do
           echo $pinterface is one we should be checking
           # Check to see if we need to update the config file
           echo Checking MTU for $pinterface
-          pmtu=$(grep $(($PTARGET-8)) /etc/ppp/peers/$pinterface)
+          pmtu=$(grep 'mtu $(($PTARGET))' /etc/ppp/peers/$pinterface)
           if [[ $pmtu ]]; then
             echo MTU already correct in /etc/ppp/peers/$pinterface
             pmtucorrect=1
