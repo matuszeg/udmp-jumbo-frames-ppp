@@ -42,7 +42,7 @@ while true; do
             # Update MTU in ppp interface config file
             sed -i 's/mtu\s[0-9]*/mtu '$PTARGET'/g' /etc/ppp/peers/$pinterface
             sed -i 's/mru\s[0-9]*/mru '$PTARGET'/g' /etc/ppp/peers/$pinterface
-            killall -SIGHUP pppd
+            restartpppd=1
           fi
           # Determine eth interface associated with ppp interface
           einterface=$(sed -n 's/plugin rp-pppoe.so \(.*\)/\1/p' /etc/ppp/peers/$pinterface)
