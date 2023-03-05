@@ -5,7 +5,6 @@
 MINTERFACES="(ppp0)"
 # Desired MTU of PPP interfaces
 PTARGET=1500
-SET_MSS=true
 
 runningmtu=0
 restartpppd=0
@@ -83,23 +82,7 @@ while true; do
             fi
           fi
         fi
-      done
-      
-      if [[ $SET_MSS ]]; then
-        echo "Checking if iptables MSS Value needs to be updated"
-        currentMSS=$(iptables -L -t mangle --line-numbers | grep -m 1 'SYN,RST/SYN TCPMSS' | sed 's/.*set \([0-9]\{4\}\).*/\1/')
-        targetMSS=$(($PTARGET-40))
-        if [[ $currentMSS -ne $targetMSS ]]; then
-            echo "Updating MSS from $currentMSS to $targetMSS"
-            while [[ $(iptables -L -t mangle --line-numbers | grep 'SYN,RST/SYN TCPMSS') ]]; do
-                iptables -t mangle -D UBIOS_FORWARD_TCPMSS 1
-            done
-            iptables -t mangle -A UBIOS_FORWARD_TCPMSS -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $targetMSS
-        else
-            echo "iptables already has correct MSS Value"
-        fi
-      fi
-      
+      done     
       if [[ $restartpppd == 1 ]]; then
         echo Killing pppd
         killall -SIGHUP pppd
