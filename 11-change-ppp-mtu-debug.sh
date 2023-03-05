@@ -4,7 +4,7 @@
 # MINTERFACES="(ppp0|ppp1|ppp10)"
 MINTERFACES="(ppp0)"
 # Desired MTU of PPP interfaces
-PTARGET=1500
+PTARGET=1444
 SET_MSS=true
 
 runningmtu=0
@@ -40,8 +40,8 @@ while true; do
             echo Updating config file for $pinterface
             echo Making changes to /etc/ppp/peers/$pinterface
             # Update MTU in ppp interface config file
-            sed -i 's/mtu\s[0-9]*/mtu $PTARGET/g' /etc/ppp/peers/$pinterface
-            sed -i 's/mru\s[0-9]*/mru $PTARGET/g' /etc/ppp/peers/$pinterface
+            sed -i 's/mtu\s[0-9]*/mtu '$PTARGET'/g' /etc/ppp/peers/$pinterface
+            sed -i 's/mru\s[0-9]*/mru '$PTARGET'/g' /etc/ppp/peers/$pinterface
             killall -SIGHUP pppd
           fi
           # Determine eth interface associated with ppp interface
