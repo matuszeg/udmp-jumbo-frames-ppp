@@ -76,8 +76,8 @@ while true; do
           if [ $pmtucorrect -eq 1 ] && [ $emtucorrect -eq 1 ]; then
             # Config files are all correct
             echo Config files are now all set correctly
-            runningmtu=$(ip link list | grep $pinterface | grep $(($PTARGET-8)))
-            if [ ! -z $runningmtu ]; then
+            runningmtu=$(ip link list | grep $pinterface | grep $(($PTARGET)))
+            if [ -z $runningmtu ]; then
               echo $pinterface still has wrong MTU
               restartpppd=1
             fi
