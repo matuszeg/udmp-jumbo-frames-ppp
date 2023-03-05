@@ -5,7 +5,7 @@
 MINTERFACES="(ppp0)"
 # Desired MTU of PPP interfaces
 PTARGET=1500
-SET_MSS=true
+SET_MSS=false
 
 function check_mtu {
     ip link list | grep -E $MINTERFACES | grep 'mtu '$PTARGET > /dev/null
@@ -25,13 +25,12 @@ while true; do
         if [[ $pinterface =~ $MINTERFACES ]]; then
           # Check to see if we need to update the config file
           echo Checking $pinterface > /dev/null
-          pmtu=$(grep $(($PTARGET)) /etc/ppp/peers/$pinterface)
-          if [[ -z $pmtu ]]; then
+          pmtu=$(grep $(($PTARGET-8)) /etc/ppp/peers/$pinterface)
+          if [[ $pmtu ]]; then
             echo Updating config file for $pinterface > /dev/null
             echo Making changes to /etc/ppp/peers/$pinterface > /dev/null
             # Update MTU in ppp interface config file
-            sed -i 's/mtu\s[0-9]*/mtu '$PTARGET'/g' /etc/ppp/peers/$pinterface
-            sed -i 's/mru\s[0-9]*/mru '$PTARGET'/g' /etc/ppp/peers/$pinterface
+            sed -i 's/ '$(($PTARGET-8))'/ '$PTARGET'/g' /etc/ppp/peers/$pinterface
           fi
           # Determine eth interface associated with ppp interface
           einterface=$(sed -n 's/plugin rp-pppoe.so \(.*\)/\1/p' /etc/ppp/peers/$pinterface)
@@ -39,9 +38,7 @@ while true; do
           emtu=$(ip link show $einterface | head -n1 |sed 's/.*mtu \([0-9]\{4\}\).*/\1/')
           # Current ethernet MTU is incorrect so needs changing
           echo Checking $einterface > /dev/null
-          if [[ $emtu -eq $(($PTARGET)) ]] ; then
-            echo $einterface has right MTU > /dev/null 
-          else
+          if [[ $emtu -lt $(($PTARGET+8)) ]] ; then
             echo $einterface has wrong MTU > /dev/null
             # Use +12 in above command if PPPoE over VLAN
             echo Reconfiguring ethernet MTU to $(($PTARGET+8)) for $einterface > /dev/null
@@ -52,6 +49,8 @@ while true; do
             # ip link set dev $einterface mtu $(($PTARGET+12)) && ip link set dev $einterface.6 mtu $(($PTARGET+8))
             # Bring interface down and up to apply changes
             ip link set $einterface down && ip link set $einterface up
+          else
+            echo $einterface has right MTU > /dev/null
           fi
           ip link set $pinterface mtu $PTARGET
         fi
@@ -69,6 +68,7 @@ while true; do
             iptables -t mangle -A UBIOS_FORWARD_TCPMSS -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $targetMSS
         fi
       fi
+      
       # Kill pppd to apply changes (it gets restarted automatically)
       # This does take down existing ppp links but as pppd comes straight back up, so should the links
       # Only kill pppd if there are ppp interfaces active and changes were made
