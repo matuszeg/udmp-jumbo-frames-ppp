@@ -33,15 +33,15 @@ while true; do
           echo Checking MTU for $pinterface
           pmtu=$(grep $(($PTARGET-8)) /etc/ppp/peers/$pinterface)
           if [[ $pmtu ]]; then
+            echo MTU already correct in /etc/ppp/peers/$pinterface
+            pmtucorrect=1
+          else
             echo Current config file MTU for $pinterface is $pmtu
             echo Updating config file for $pinterface
             echo Making changes to /etc/ppp/peers/$pinterface
             # Update MTU in ppp interface config file
             sed -i 's/ '$(($PTARGET-8))'/ '$PTARGET'/g' /etc/ppp/peers/$pinterface
             killall -SIGHUP pppd
-          else
-            echo MTU already correct in /etc/ppp/peers/$pinterface
-            pmtucorrect=1
           fi
           # Determine eth interface associated with ppp interface
           einterface=$(sed -n 's/plugin rp-pppoe.so \(.*\)/\1/p' /etc/ppp/peers/$pinterface)
