@@ -95,6 +95,8 @@ while true; do
                 iptables -t mangle -D UBIOS_FORWARD_TCPMSS 1
             done
             iptables -t mangle -A UBIOS_FORWARD_TCPMSS -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $targetMSS
+        else
+            echo "iptables already has correct MSS Value"
         fi
       fi
       
